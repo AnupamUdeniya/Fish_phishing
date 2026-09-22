@@ -83,14 +83,20 @@ The project should only be used with emails and datasets that the user is author
 
 # ▶️ Commands to Run the Project
 
-Run these commands from PowerShell on Windows.
+After downloading or cloning the repository, open PowerShell in the project root folder. The project root is the folder that contains `backend`, `frontend`, and `extension`.
+
+You can also enter the project root with:
+
+```powershell
+cd path\to\Fish_phising
+```
 
 ## 1. Start the Backend
 
 Open the first terminal:
 
 ```powershell
-cd "C:\Users\anupa\Downloads\GPT_Luna\Fish_phising\Fish_phising\backend"
+cd backend
 .\venv\Scripts\Activate.ps1
 python app.py
 ```
@@ -122,7 +128,7 @@ ok
 In the second terminal:
 
 ```powershell
-cd "C:\Users\anupa\Downloads\GPT_Luna\Fish_phising\Fish_phising\frontend\phishing-extension"
+cd frontend\phishing-extension
 npm install
 npm run lint
 npm run build
@@ -133,11 +139,7 @@ npm run build
 1. Open `chrome://extensions`.
 2. Turn on **Developer mode**.
 3. Click **Load unpacked**.
-4. Select this folder:
-
-```text
-C:\Users\anupa\Downloads\GPT_Luna\Fish_phising\Fish_phising\extension
-```
+4. Select the `extension` folder inside the downloaded project folder.
 
 5. Click **Reload** after rebuilding the extension.
 6. Open Gmail and refresh the page.
@@ -148,7 +150,7 @@ C:\Users\anupa\Downloads\GPT_Luna\Fish_phising\Fish_phising\extension
 Backend terminal:
 
 ```powershell
-cd "C:\Users\anupa\Downloads\GPT_Luna\Fish_phising\Fish_phising\backend"
+cd backend
 .\venv\Scripts\Activate.ps1
 python app.py
 ```
@@ -156,7 +158,7 @@ python app.py
 Frontend terminal:
 
 ```powershell
-cd "C:\Users\anupa\Downloads\GPT_Luna\Fish_phising\Fish_phising\frontend\phishing-extension"
+cd frontend\phishing-extension
 npm run build
 ```
 
