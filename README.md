@@ -132,6 +132,26 @@ Test-Path ml\models\xgboost_url\url_xgboost.json
 
 Both commands must return `True`.
 
+## Train the Models
+
+Run these commands from the project root, before starting the backend or using the browser extension. If you see `ModuleNotFoundError: No module named 'numpy'` or similar package errors, install the project dependencies first in the active virtual environment:
+
+```powershell
+# activate the local virtual environment
+.\.venv-1\Scripts\Activate.ps1
+
+# install Python dependencies needed for training
+python -m pip install --upgrade pip setuptools wheel
+python -m pip install -r backend\requirements.txt
+
+# train the models
+python ml/scripts/train_deberta.py
+python ml/scripts/train_xgboost.py
+python ml/scripts/train_fusion.py
+```
+
+The text model trains on the processed email dataset and saves output to `ml/models/deberta_phishing`, the URL model trains on the processed URL dataset and saves to `ml/models/xgboost_url`, and the fusion model saves to `ml/models/fusion`.
+
 ## 1. Start the Backend
 
 Open the first terminal:
