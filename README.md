@@ -47,6 +47,40 @@ The main goals of the project are:
 
 ---
 
+# 👥 How People Use This Project
+
+## Students and Researchers
+
+Students can use this project to learn how a complete phishing detection system is developed. It demonstrates dataset preparation, text classification, URL feature extraction, model evaluation, Flask API development, and browser-extension integration in one project.
+
+Researchers can use the training scripts and evaluation files to compare text-based detection, URL-based detection, and combined text-plus-URL detection approaches.
+
+## Gmail Users
+
+Gmail users can load the Chrome extension locally and scan an opened email before clicking links or sharing sensitive information. The extension extracts the email subject, sender, body, and available URLs, then displays a phishing result and risk information in the popup.
+
+## Developers
+
+Developers can use the Flask API as a local service for testing phishing detection workflows. The frontend can also be modified to support additional email providers, new UI features, or improved model responses.
+
+## Security Demonstrations
+
+The project can be used in classroom demonstrations, project presentations, and controlled security-awareness exercises. A demonstrator can show how urgent language, suspicious login requests, and unsafe-looking URLs affect the final classification.
+
+## Email Testing Workflow
+
+1. Start the local Flask backend.
+2. Build and load the Chrome extension.
+3. Open Gmail and select an email.
+4. Open the Phishing Detector popup.
+5. Review the extracted subject, sender, and message preview.
+6. Select **Scan this email**.
+7. Review the classification, risk score, and detected URLs.
+
+The project should only be used with emails and datasets that the user is authorized to inspect. It is intended for education, research, and controlled testing, not as a replacement for enterprise email security systems.
+
+---
+
 # 🏗️ System Architecture
 
 ## Current Architecture
