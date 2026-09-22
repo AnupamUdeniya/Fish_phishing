@@ -166,17 +166,21 @@ function App() {
         <section className="card">
           <div className="section-label">MESSAGE PREVIEW</div>
 
-          <h3>{email.subject}</h3>
+          <div className="message-subject">
+            <span className="field-label">SUBJECT</span>
+            <h3>{email.subject || "No subject"}</h3>
+          </div>
 
-          <p>
-            <strong>From:</strong> {email.sender}
-          </p>
+          <div className="sender-row">
+            <span className="field-label">FROM</span>
+            <span className="sender-value">{email.sender || "Unknown sender"}</span>
+          </div>
 
           <p className="message-meta">
-            {email.body.length.toLocaleString()} characters ready for analysis
+            {email.body.length.toLocaleString()} characters ready to scan
           </p>
 
-          <p className="body-preview">{email.body}</p>
+          <p className="body-preview">{email.body.slice(0, 220)}{email.body.length > 220 ? "..." : ""}</p>
         </section>
 
       ) : (
@@ -194,7 +198,7 @@ function App() {
           disabled={loading}
         >
 
-          <span>{loading ? "Analyzing..." : "Scan Email"}</span>
+          <span>{loading ? "Checking message..." : "Scan this email"}</span>
 
         </button>
 
