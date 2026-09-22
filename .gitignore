@@ -1,0 +1,69 @@
+# =========================
+# Python
+# =========================
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.pyo
+
+# =========================
+# Environment / Secrets
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# Node
+# =========================
+node_modules/
+npm-debug.log*
+frontend/phishing-extension/dist/
+
+# =========================
+# Raw datasets
+# =========================
+ml/data/raw/
+
+# =========================
+# Processed datasets
+# =========================
+ml/data/processed/*.csv
+ml/data/processed/*.xlsx
+ml/data/processed/*.npz
+ml/data/processed/*.npy
+
+# Processed dataset directories
+ml/data/processed/url_tfidf/
+ml/data/processed/url_svd/
+ml/data/processed/multimodal_predictions/
+
+# =========================
+# Trained models
+# =========================
+ml/models/
+
+# =========================
+# Python generated files
+# =========================
+*.joblib
+*.pkl
+*.pickle
+
+# =========================
+# IDE
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# OS
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Logs
+# =========================
+*.log
