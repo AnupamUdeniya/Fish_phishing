@@ -1,29 +1,27 @@
 # Fish Phishing Detection
 
-An AI-powered phishing detection system that combines **Deep Learning, Machine Learning, URL analysis, and browser-extension technology** to detect phishing emails and malicious URLs.
+A local phishing detection system that combines a trained DeBERTa text classifier, a trained XGBoost URL classifier, and a Gmail browser extension to detect phishing emails and malicious URLs.
 
-The project started from an existing LLM-based browser extension and is being upgraded into a system with **independently trained ML/DL models**, reducing dependency on external LLM APIs.
+The main detection endpoint runs locally and does not use keyword matching or an external LLM API. Gemini remains only as an optional legacy endpoint and is not required for the extension workflow.
 
 ---
 
-# 📌 Project Overview
+# Project Overview
 
 Phishing attacks commonly use fraudulent emails, malicious URLs, fake login pages, urgency-based messages, and social engineering techniques to deceive users.
 
 The original version of this project used an external Large Language Model (LLM) API to classify emails.
 
-This upgraded version focuses on building our own machine-learning pipeline using:
+The current detection pipeline uses:
 
 - **DeBERTa-v3-base** for email/text phishing detection
 - **XGBoost** for URL phishing detection
 - URL handcrafted features
-- Character-level URL TF-IDF
-- Truncated SVD
-- Domain-aware dataset splitting
-- Late-fusion experiments combining text and URL predictions
+- A 25-feature handcrafted URL representation
+- A weighted fusion of text and URL probabilities
 - Chrome browser extension integration
 
-The long-term goal is to create a phishing detection system that can analyze:
+The deployed system analyzes:
 
 1. Email text
 2. URLs
@@ -32,7 +30,7 @@ The long-term goal is to create a phishing detection system that can analyze:
 
 ---
 
-# 🎯 Project Goals
+# Project Goals
 
 The main goals of the project are:
 
@@ -40,14 +38,36 @@ The main goals of the project are:
 - Detect malicious/phishing URLs using a Machine Learning model.
 - Analyze both text and URLs rather than relying only on one signal.
 - Reduce dependency on external LLM APIs.
-- Build a model that can eventually run as part of a browser extension.
+- Run trained models as part of a browser extension.
 - Provide phishing probability/risk information.
 - Compare individual models with a combined multimodal approach.
 - Create a reproducible ML pipeline for dataset preparation, training, and evaluation.
 
 ---
 
-# 👥 How People Use This Project
+# 🤖 Actual Model Inference
+
+The extension uses the `POST /api/ml-detect` endpoint in `backend/routes/llm.py`.
+
+1. The Gmail content script extracts the subject, sender, body, and URLs.
+2. The DeBERTa checkpoint at `ml/models/deberta_phishing/best` produces the phishing probability for the full email text.
+3. URLs are converted into the 25 handcrafted features defined in `ml/scripts/url_features.py`.
+4. The trained XGBoost model at `ml/models/xgboost_url/url_xgboost.json` produces the URL phishing probability.
+5. The final risk probability is calculated as:
+
+```text
+final risk = 0.60 × text probability + 0.40 × URL probability
+```
+
+6. The API returns the final classification, risk score, model probabilities, URL count, and extracted URLs.
+
+If the trained-model dependencies or artifacts are missing, the API returns an error instead of silently falling back to keyword matching.
+
+The `ml/data/processed/multimodal_predictions` and SVD-related files are used by training and evaluation experiments; they are not required by the current live API URL inference path.
+
+---
+
+# How People Use This Project
 
 ## Students and Researchers
 
@@ -81,7 +101,7 @@ The project should only be used with emails and datasets that the user is author
 
 ---
 
-# ▶️ Commands to Run the Project
+# Commands to Run the Project
 
 After downloading or cloning the repository, open PowerShell in the project root folder. The project root is the folder that contains `backend`, `frontend`, and `extension`.
 
@@ -97,7 +117,10 @@ Open the first terminal:
 
 ```powershell
 cd backend
+python -m venv venv
 .\venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip setuptools wheel
+pip install -r requirements.txt
 python app.py
 ```
 
@@ -166,7 +189,7 @@ After the build finishes, reload the extension in `chrome://extensions` and refr
 
 ---
 
-# 🏗️ System Architecture
+# System Architecture
 
 ## Current Architecture
 
