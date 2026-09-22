@@ -11,7 +11,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 TEXT_MODEL_DIR = PROJECT_ROOT / "ml" / "models" / "deberta_phishing" / "best"
-URL_MODEL_FILE = PROJECT_ROOT / "ml" / "models" / "xgboost_url" / "url_xgboost_improved.json"
+URL_MODEL_FILE = PROJECT_ROOT / "ml" / "models" / "xgboost_url" / "url_xgboost.json"
 MODEL_STATE = None
 
 
@@ -25,7 +25,7 @@ def load_models():
         import pandas as pd
         import torch
         import xgboost as xgb
-        from transformers import AutoModelForSequenceClassification, AutoTokenizer
+        from transformers import AutoModelForSequenceClassification, DebertaV2TokenizerFast
         from ml.scripts.url_features import extract_url_features_dataframe
     except ImportError as error:
         raise RuntimeError(
@@ -37,7 +37,16 @@ def load_models():
         raise RuntimeError("Trained model artifacts are missing from ml/models.")
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    tokenizer = AutoTokenizer.from_pretrained(str(TEXT_MODEL_DIR))
+    tokenizer = DebertaV2TokenizerFast(
+        tokenizer_file=str(TEXT_MODEL_DIR / "tokenizer.json"),
+        bos_token="[CLS]",
+        eos_token="[SEP]",
+        cls_token="[CLS]",
+        sep_token="[SEP]",
+        pad_token="[PAD]",
+        unk_token="[UNK]",
+        mask_token="[MASK]",
+    )
     text_model = AutoModelForSequenceClassification.from_pretrained(str(TEXT_MODEL_DIR))
     text_model.to(device)
     text_model.eval()
