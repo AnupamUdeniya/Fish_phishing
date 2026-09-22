@@ -1,99 +1,279 @@
+/* global chrome */
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import './App.css'
 
 function App() {
-  const [email, setEmail] = useState(null);
-  const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [emailLoading, setEmailLoading] = useState(true);
+  const [email, setEmail] = useState(null)
+  const [result, setResult] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [emailLoading, setEmailLoading] = useState(true)
+  const [backendReady, setBackendReady] = useState(false)
 
   useEffect(() => {
-    setEmailLoading(true);
+    setEmailLoading(true)
 
-    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-      if (request.type === "EMAIL_DATA") {
-        setEmail(request.payload);
-        setEmailLoading(false);
+    const listener = (request) => {
+      if (request?.type === "EMAIL_DATA" && request.payload) {
+        setEmail(request.payload)
+        setEmailLoading(false)
       }
-      console.log("Extracted email:" + request.payload);
-    });
-  }, []);
+    }
 
-  const testEmail = {
-    subject: "Your order has been executed",
-    sender: "noreply@robinhood.com",
-    body: "Your order to sell $30.00 of AMD through your individual account was executed on April 9, 2025 at 3:51 PM ET. You received $30.00 for 0.30832 shares, at an average price of $97.29 per share. Funds available from this trade will be reflected in your withdrawable cash on Apr. 10, 2025."
-  }
+    chrome.runtime.onMessage.addListener(listener)
 
-const handleScan = async () => {
-    console.log(email)
-    if (!email || !email.subject || !email.sender || !email.body) {
-    setResult({
-      label: "Error",
-      explanation: "Missing required email fields (subject, sender, body). Please ensure the email is fully captured."
-    });
-    return;
-  }
-  setLoading(true);
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const activeTab = tabs[0]
 
+      if (!activeTab?.id) {
+        setEmailLoading(false)
+        return
+      }
+
+      chrome.tabs.sendMessage(
+        activeTab.id,
+        { type: "GET_EMAIL_DATA" },
+        (response) => {
+          if (chrome.runtime.lastError || !response?.payload) {
+            setEmail(null)
+          } else {
+            setEmail(response.payload)
+          }
+          setEmailLoading(false)
+        }
+      )
+    })
+
+    return () => {
+      chrome.runtime.onMessage.removeListener(listener)
+    }
+  }, [])
+
+  useEffect(() => {
+    axios.get('http://127.0.0.1:5000/api/health')
+      .then(() => setBackendReady(true))
+      .catch(() => setBackendReady(false))
+  }, [])
+
+  const handleScan = async () => {
+
+    console.log("Scanning email:", email)
+
+    if (!email) {
+      setResult({
+        label: "No email selected",
+        explanation: "Open a Gmail message, refresh the page, and try again."
+      })
+      return
+    }
+
+    setLoading(true)
+    setResult(null)
 
     try {
-      const res = await axios.post('http://127.0.0.1:5000/api/llm-query', {
-      subject: email.subject,
-      sender: email.sender,
-      body: email.body
-    });
-    const { is_phishing, explanation } = res.data;
-    setResult({
-      label: is_phishing ? "⚠️ Phishing Detected" : "✅ Not Phishing",
-      explanation
-    });
-    console.log(res.data)
+
+      const res = await axios.post(
+        'http://127.0.0.1:5000/api/ml-detect',
+        {
+          subject: email.subject || "",
+          sender: email.sender || "",
+          body: email.body || ""
+        }
+      )
+
+      console.log("ML response:", res.data)
+
+      const {
+        is_phishing,
+        risk_level,
+        risk_score,
+        text_probability,
+        url_probability,
+        url_count,
+        urls
+      } = res.data
+
+      setResult({
+
+        label: is_phishing
+          ? "Phishing Detected"
+          : "Not Phishing",
+
+        explanation: is_phishing
+          ? `The ML system detected phishing indicators in this email.`
+          : `The ML system did not detect strong phishing indicators.`,
+
+        riskLevel: risk_level,
+
+        riskScore: risk_score,
+
+        textProbability: text_probability,
+
+        urlProbability: url_probability,
+
+        urlCount: url_count,
+
+        urls: urls || []
+
+      })
 
     } catch (err) {
-      console.error(err)
+
+      console.error("Detection error:", err)
+
+      const isNetworkError = !err.response
       setResult({
-        label: "Error",
-        explanation: err.response?.data?.error || err.message
+        label: isNetworkError ? "Backend offline" : "Scan failed",
+        explanation: isNetworkError
+          ? "Start Flask with python app.py, keep that terminal open, then scan again."
+          : err.response?.data?.error || "The detector could not process this email."
       })
+
     } finally {
-      setLoading(false);
+
+      setLoading(false)
+
     }
   }
 
   return (
-    <div className = "container">
-      <h1>OpenAI Phishing Detector</h1>
+    <div className="container">
+      <header className="app-header">
+        <div>
+          <p className="eyebrow">EMAIL SECURITY</p>
+          <h1>Phishing Detector</h1>
+        </div>
+        <span className={`status ${backendReady ? 'status-ready' : 'status-offline'}`}>
+          <span className="status-dot"></span>
+          {backendReady ? 'Ready' : 'Offline'}
+        </span>
+      </header>
 
       {emailLoading ? (
+
         <div className="load-wrapper">
+
           <div className="loader"></div>
-          <p className="load-text">Loading email...</p>
+
+          <p className="load-text">
+            Loading email...
+          </p>
+
         </div>
+
       ) : email ? (
-        <div className="card">
+
+        <section className="card">
+          <div className="section-label">MESSAGE PREVIEW</div>
+
           <h3>{email.subject}</h3>
-          <p>From: {email.sender}</p>
-          <p>{email.body}</p>
-        </div>
+
+          <p>
+            <strong>From:</strong> {email.sender}
+          </p>
+
+          <p className="message-meta">
+            {email.body.length.toLocaleString()} characters ready for analysis
+          </p>
+
+          <p className="body-preview">{email.body}</p>
+        </section>
+
       ) : (
-        <p>Please open an email to begin scan.</p>
+
+        <p>
+          Please open an email to begin scan.
+        </p>
+
       )}
 
       {!emailLoading && email && (
-        <button onClick={handleScan}>
-          Scan Email
-        </button> 
+
+        <button className="scan-button"
+          onClick={handleScan}
+          disabled={loading}
+        >
+
+          <span>{loading ? "Analyzing..." : "Scan Email"}</span>
+
+        </button>
+
       )}
 
-      {loading && <div className="loader"></div>}
-      {result && (
-        <div className={"result-card"}>
-          <h2>{result.label}</h2>
-          <p>{result.explanation}</p>
+      {loading && (
+
+        <div className="load-wrapper">
+
+          <div className="loader"></div>
+
+          <p>
+            Analysis in progress...
+          </p>
+
         </div>
+
       )}
+
+      {result && (
+
+        <section className={`result-card ${result.riskLevel ? `risk-${result.riskLevel.toLowerCase()}` : 'result-error'}`}>
+
+          <h2>
+            {result.label}
+          </h2>
+
+          <p className="explanation">
+            {result.explanation}
+          </p>
+
+          {result.riskScore !== undefined && (
+
+            <div className="metrics-grid">
+
+              <p className="metric">
+                <strong>Risk Level:</strong>{" "}
+                {result.riskLevel}
+              </p>
+
+              <p className="metric">
+                <strong>Risk Score:</strong>{" "}
+                {result.riskScore}%
+              </p>
+
+              <p className="metric">
+                <strong>Text Model:</strong>{" "}
+                {result.textProbability}%
+              </p>
+
+              <p className="metric">
+                <strong>URL Model:</strong>{" "}
+                {result.urlProbability}%
+              </p>
+
+              <p className="metric">
+                <strong>URLs Found:</strong>{" "}
+                {result.urlCount}
+              </p>
+
+              {result.urls.length > 0 && (
+                  <div className="url-list">
+                  <strong>Detected URLs:</strong>
+                  <ul>
+                    {result.urls.map((url) => (
+                      <li key={url}>{url}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+            </div>
+
+          )}
+
+        </section>
+
+      )}
+
     </div>
   )
 }
