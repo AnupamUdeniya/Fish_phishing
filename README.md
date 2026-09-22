@@ -81,6 +81,89 @@ The project should only be used with emails and datasets that the user is author
 
 ---
 
+# ▶️ Commands to Run the Project
+
+Run these commands from PowerShell on Windows.
+
+## 1. Start the Backend
+
+Open the first terminal:
+
+```powershell
+cd "C:\Users\anupa\Downloads\GPT_Luna\Fish_phising\Fish_phising\backend"
+.\venv\Scripts\Activate.ps1
+python app.py
+```
+
+Keep this terminal running. The Flask API starts at:
+
+```text
+http://127.0.0.1:5000
+```
+
+## 2. Check the Backend
+
+Open a second terminal and run:
+
+```powershell
+Invoke-RestMethod http://127.0.0.1:5000/api/health
+```
+
+Expected response:
+
+```text
+status
+------
+ok
+```
+
+## 3. Build the Chrome Extension
+
+In the second terminal:
+
+```powershell
+cd "C:\Users\anupa\Downloads\GPT_Luna\Fish_phising\Fish_phising\frontend\phishing-extension"
+npm install
+npm run lint
+npm run build
+```
+
+## 4. Load the Extension in Chrome
+
+1. Open `chrome://extensions`.
+2. Turn on **Developer mode**.
+3. Click **Load unpacked**.
+4. Select this folder:
+
+```text
+C:\Users\anupa\Downloads\GPT_Luna\Fish_phising\Fish_phising\extension
+```
+
+5. Click **Reload** after rebuilding the extension.
+6. Open Gmail and refresh the page.
+7. Open an email, open the **Phishing Detector** popup, and select **Scan this email**.
+
+## Quick Start After Installation
+
+Backend terminal:
+
+```powershell
+cd "C:\Users\anupa\Downloads\GPT_Luna\Fish_phising\Fish_phising\backend"
+.\venv\Scripts\Activate.ps1
+python app.py
+```
+
+Frontend terminal:
+
+```powershell
+cd "C:\Users\anupa\Downloads\GPT_Luna\Fish_phising\Fish_phising\frontend\phishing-extension"
+npm run build
+```
+
+After the build finishes, reload the extension in `chrome://extensions` and refresh Gmail.
+
+---
+
 # 🏗️ System Architecture
 
 ## Current Architecture
