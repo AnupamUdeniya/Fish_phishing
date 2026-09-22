@@ -1,33 +1,50 @@
-# CMPE209FinalProject - Phising extension using LLM
+# Fish Phishing Detection
 
-Requirement
-   - NodeJS version v20.0.0 or greater
-   - Python3
-- Build the backend:
-  ```sh
-        cd backend
-        python3 -m venv venv
-        # Depending on if you're using macOS or Windows, use the following commands:
-           - MacOS: source venv/bin/activate
-           - Windows: venv\Scripts\activate
-        pip install -r requirements.txt
-        python app.py
-    ```
+An AI-powered phishing detection browser extension that combines
+Deep Learning and Machine Learning models to detect phishing emails
+and malicious URLs.
 
-- Build the extension:
-    ```sh
-        cd frontend/phishing-extension
-        npm install
-        npm run build
-    ```
+## Project Overview
 
-- Install the extension locally:
-    - Step 1: Access the extension.
-        - In Google Chrome browser tab bar, type chrome://extensions/
-    - Step 2: Turn on developer mode:
-        - Toggle on the developer mode located at the upper right of the extension window. This allow us to load the extension for testing purpose
-    - Step 3: Load the unpacked extension.
-        - After the developer mode is turned on, browser will show you the button upload extension. Simply click to the Load Unpacked button and navigate to the extension folder in the project to upload the extension.
+This project is an upgraded version of an existing phishing detection
+browser extension.
 
-# Final Demo/Presentation Video
-https://drive.google.com/file/d/1da0vrgniRjeGQX0DhJtp49EqYFVWwu5Z/view?usp=drive_link
+The original system used an LLM-based approach for phishing detection.
+Our version is being extended with independently trained Machine
+Learning and Deep Learning models.
+
+## Current Architecture
+
+```text
+Email / Text
+     |
+     v
+DeBERTa-v3-base
+     |
+     v
+Text Phishing Probability
+
+
+URL
+ |
+ v
+URL Feature Extraction
+ |
+ +--> Handcrafted Features
+ |
+ +--> URL TF-IDF
+ |
+ +--> SVD
+ |
+ v
+XGBoost
+ |
+ v
+URL Phishing Probability
+
+        |
+        v
+   Fusion Layer
+        |
+        v
+Final Phishing Detection
