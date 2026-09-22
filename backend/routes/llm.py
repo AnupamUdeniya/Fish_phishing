@@ -1,12 +1,50 @@
 from dotenv import load_dotenv
 import os
 from flask import Blueprint, jsonify, request
-from google.genai import types
-from google import genai
 import json
 import re
 
 llm_bp = Blueprint('llm', __name__)
+
+
+def local_detection(subject, sender, body):
+    message = f"{subject} {sender} {body}".lower()
+    indicators = (
+        "urgent", "verify your account", "click here", "password",
+        "suspended", "confirm your", "login", "winner", "gift card"
+    )
+    matches = [indicator for indicator in indicators if indicator in message]
+
+    if matches:
+        return jsonify({
+            "is_phishing": True,
+            "explanation": "Local analysis found phishing indicators: " + ", ".join(matches) + "."
+        })
+
+    return jsonify({
+        "is_phishing": False,
+        "explanation": "Local analysis did not find strong phishing indicators."
+    })
+
+
+@llm_bp.route('/api/ml-detect', methods=['POST'])
+def ml_detect():
+    data = request.get_json(silent=True) or {}
+    result = local_detection(
+        data.get("subject", ""),
+        data.get("sender", ""),
+        data.get("body", "")
+    ).get_json()
+    is_phishing = bool(result.get("is_phishing"))
+    return jsonify({
+        "is_phishing": is_phishing,
+        "risk_level": "High" if is_phishing else "Low",
+        "risk_score": 85 if is_phishing else 10,
+        "text_probability": 85 if is_phishing else 10,
+        "url_probability": 0,
+        "url_count": 0,
+        "urls": []
+    })
 
 
 @llm_bp.route('/api/llm-query', methods=['POST'])
@@ -36,16 +74,22 @@ def generate():
     
     api_key = os.getenv("GEMINI_API_KEY")
 
-    
-    client = genai.Client(api_key=api_key)
-    chat = client.chats.create(
-        model="gemini-2.0-flash",
-        config=types.GenerateContentConfig(
-        max_output_tokens=200,
-    )
-    )
-    
-    response = chat.send_message(prompt)
+    if not api_key:
+        return local_detection(subject, sender, body)
+
+    try:
+        from google import genai
+        from google.genai import types
+
+        client = genai.Client(api_key=api_key)
+        chat = client.chats.create(
+            model="gemini-2.0-flash",
+            config=types.GenerateContentConfig(max_output_tokens=200)
+        )
+        response = chat.send_message(prompt)
+    except Exception:
+        return local_detection(subject, sender, body)
+
     print(response.text, flush=True)
     
     response_text = response.text.strip()

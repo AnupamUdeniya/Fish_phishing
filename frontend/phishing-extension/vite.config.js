@@ -1,6 +1,9 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { resolve } from 'path'
+import { dirname, resolve } from 'path'
+import { fileURLToPath } from 'url'
+
+const currentDirectory = dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
   base: '',
@@ -10,7 +13,7 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       input: {
-        popup: resolve(__dirname, 'popup.html')
+        popup: resolve(currentDirectory, 'popup.html')
       }
     }
   }
