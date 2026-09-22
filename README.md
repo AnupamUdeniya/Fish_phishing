@@ -103,13 +103,34 @@ The project should only be used with emails and datasets that the user is author
 
 # Commands to Run the Project
 
-After downloading or cloning the repository, open PowerShell in the project root folder. The project root is the folder that contains `backend`, `frontend`, and `extension`.
-
-You can also enter the project root with:
+The easiest method is to clone the repository. Open PowerShell in any folder where you want to keep the project and run:
 
 ```powershell
-cd path\to\Fish_phising
+git clone https://github.com/AnupamUdeniya/Fish_phishing.git
+cd Fish_phishing
 ```
+
+The project root is now the folder that contains `backend`, `frontend`, and `extension`.
+
+If you downloaded a ZIP file instead, open PowerShell in the extracted project root. Do not run the commands from the parent folder if the project is inside another folder.
+
+## Important: Trained Model Files
+
+The trained model files are approximately 751 MB and are not stored in this GitHub repository because of GitHub file-size limits. The trained detector requires these folders:
+
+```text
+ml/models/deberta_phishing/best/
+ml/models/xgboost_url/url_xgboost.json
+```
+
+Copy the `ml/models` folder from the project package or download it from the project owner before starting the backend. Check that the files exist with:
+
+```powershell
+Test-Path ml\models\deberta_phishing\best\config.json
+Test-Path ml\models\xgboost_url\url_xgboost.json
+```
+
+Both commands must return `True`.
 
 ## 1. Start the Backend
 
@@ -117,7 +138,7 @@ Open the first terminal:
 
 ```powershell
 cd backend
-python -m venv venv
+py -3.11 -m venv venv
 .\venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip setuptools wheel
 pip install -r requirements.txt
